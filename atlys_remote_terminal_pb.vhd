@@ -70,7 +70,14 @@ architecture Behavioral of atlys_remote_terminal_pb is
 		);
 	END COMPONENT;
 	
-	signal slow_clk : std_logic;
+	COMPONENT clk_to_baud
+	PORT(
+		clk : IN std_logic;
+		reset : IN std_logic;          
+		baud_16x_en : OUT std_logic
+		);
+	END COMPONENT;
+	
 	signal data : std_logic_vector(7 downto 0);
 	signal en_sig, buffer_write_sig, buffer_data_sig : std_logic; 
 	signal half_full_sig, full_sig, buffer_reset_sig : std_logic;
