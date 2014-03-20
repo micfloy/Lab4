@@ -204,7 +204,7 @@ begin
 	process(clk, reset)
 	begin
 		if(rising_edge(clk)) then
-			case port_id
+			case port_id is
 				when switches_port =>
 					port_in <= data_in_pico;
 				when char_port =>
@@ -217,13 +217,13 @@ begin
 		end if;
 	end process;
 	
-	buff_read <= '1' when port_id = switches_port and read_strobe = '1' else
+	buffer_read <= '1' when port_id = switches_port and read_strobe = '1' else
 					 '1' when port_id = char_port and read_strobe = '1' else
 					 '0';
 					 
-	buff_write <= '1' when port_id = char_out_port and write_strobe = '1' else
-					  '1' when port_id = led_low_port and write_strobe ='1' else
-					  '1' when port_id = led_high_port and write_strobe ='1' else
+	buffer_write <= '1' when port_id = char_out_port and write_strobe = '1' else
+					  '1' when port_id = led_top_port and write_strobe ='1' else
+					  '1' when port_id = led_bot_port and write_strobe ='1' else
 					  '0';
 
 
