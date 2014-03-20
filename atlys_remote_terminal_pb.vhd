@@ -111,12 +111,13 @@ architecture Behavioral of atlys_remote_terminal_pb is
 		);
 	END COMPONENT;
 	
-	constant switches_port	   : std_logic_vector := x"AF";
-	constant char_port			: std_logic_vector := x"AD";
+	constant switches_hi_port	: std_logic_vector := x"AF";
+	constant switches_lo_port  : std_logic_vector := x"AE";
+	constant char_port			: std_logic_vector := x"A1";
 	constant data_present_port : std_logic_vector := x"07";
-	constant char_out_port		: std_logic_vector := x"AC";
+	constant char_out_port		: std_logic_vector := x"A2";
 	constant led_bot_port		: std_logic_vector := x"AB";
-	constant led_top_port		: std_logic_vector := x"AE";
+	constant led_top_port		: std_logic_vector := x"AC";
 	
 	signal data_in_pico, data_out_pico : std_logic_vector(7 downto 0);
 	signal en_sig, buffer_data, buffer_read, buffer_write : std_logic; 
@@ -134,6 +135,9 @@ architecture Behavioral of atlys_remote_terminal_pb is
 	Signal interrupt_ack : std_logic;
 	Signal kcpsm6_sleep : std_logic;
 	Signal kcpsm6_reset : std_logic;
+	
+	signal switch_char_hi, switch_char_lo : std_logic_vector(3 downto 0);
+	
 	
 begin
 
@@ -205,8 +209,10 @@ begin
 	begin
 		if(rising_edge(clk)) then
 			case port_id is
-				when switches_port =>
-					port_in <= data_in_pico;
+				when switches_hi_port =>
+					port_in <= switch_char_hi;
+				when switches_lo_port =>
+					port_in <= switch_char_lo;
 				when char_port =>
 					port_in <= data_in_pico;
 				when data_present_port =>
@@ -217,14 +223,13 @@ begin
 		end if;
 	end process;
 	
-	buffer_read <= '1' when port_id = switches_port and read_strobe = '1' else
-					 '1' when port_id = char_port and read_strobe = '1' else
-					 '0';
+	buffer_read <= '1' when port_id = char_port and read_strobe = '1' else
+					   '0';
 					 
 	buffer_write <= '1' when port_id = char_out_port and write_strobe = '1' else
-					  '1' when port_id = led_top_port and write_strobe ='1' else
-					  '1' when port_id = led_bot_port and write_strobe ='1' else
-					  '0';
+					    '1' when port_id = led_top_port and write_strobe ='1' else
+					    '1' when port_id = led_bot_port and write_strobe ='1' else
+					    '0';
 
 
 
