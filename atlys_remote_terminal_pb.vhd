@@ -111,6 +111,20 @@ architecture Behavioral of atlys_remote_terminal_pb is
 		);
 	END COMPONENT;
 	
+	COMPONENT ascii_to_nibble
+	PORT(
+		ascii : IN std_logic_vector(7 downto 0);          
+		nibble : OUT std_logic_vector(3 downto 0)
+		);
+	END COMPONENT;
+	
+	COMPONENT nibble_to_ascii
+	PORT(
+		nibble : IN std_logic_vector(3 downto 0);          
+		ascii : OUT std_logic_vector(7 downto 0)
+		);
+	END COMPONENT;
+	
 	constant switches_hi_port	: std_logic_vector := x"AF";
 	constant switches_lo_port  : std_logic_vector := x"AE";
 	constant char_port			: std_logic_vector := x"A1";
@@ -136,7 +150,7 @@ architecture Behavioral of atlys_remote_terminal_pb is
 	Signal kcpsm6_sleep : std_logic;
 	Signal kcpsm6_reset : std_logic;
 	
-	signal switch_char_hi, switch_char_lo : std_logic_vector(7 downto 0);
+	signal switch_char_hi, switch_char_lo, led_high, led_low : std_logic_vector(7 downto 0);
 	
 	
 begin
@@ -212,29 +226,47 @@ begin
 			rdl => kcpsm6_reset,
 			clk => clk);
 			
-	process(clk, reset)
-	begin
-		if(rising_edge(clk)) then
-			case port_id is
-				when switches_hi_port =>
-					port_in <= switch_char_hi;
-				when switches_lo_port =>
-					port_in <= switch_char_lo;
-				when char_port =>
-					port_in <= data_in_pico;
-				when data_present_port =>
-					port_in <= "0000000" & buffer_data;
-				when others =>
-					port_in <= "00000000";
-			end case;
-		end if;
-	end process;
+
+	port_in <= data_in_pico when port_id = char_port else
+				  switch_char_hi when port_id = switches_hi_port else
+				  switch_char_lo when port_id = switches_lo_port else
+				  "0000000" & buffer_data when port_id = data_present_port else
+				  (others => '0');
+					
 	
 	buffer_read <= '1' when port_id = char_port and read_strobe = '1' else
 					   '0';
 					 
 	buffer_write <= '1' when port_id = char_out_port and write_strobe = '1' else
 					    '0';
+						 
+	data_out_pico <= port_out when port_id = char_out_port else
+						  (others => '0');
+						 
+	led_high <= port_out when port_id = led_top_port and write_strobe = '1';
+	led_low <= port_out when port_id = led_bot_port and write_strobe = '1';
+		
+	nibble_to_ascii_high: nibble_to_ascii PORT MAP(
+		nibble => switch(7 downto 4),
+		ascii => switch_char_hi
+	);
+	
+	nibble_to_ascii_low: nibble_to_ascii PORT MAP(
+		nibble => switch(3 downto 0),
+		ascii => switch_char_lo
+	);
+
+
+		
+	led_top: ascii_to_nibble PORT MAP(
+		ascii => led_high,
+		nibble => led(7 downto 4)
+	);
+	
+	led_bot: ascii_to_nibble PORT MAP(
+		ascii => led_low,
+		nibble => led(3 downto 0)
+	);
 
 
 
