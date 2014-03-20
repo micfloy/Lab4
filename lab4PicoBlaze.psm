@@ -1,0 +1,95 @@
+switches_high	EQU $AF
+switches_low	EQU $AE
+data_present	EQU $07
+read_port	EQU $A1
+write_port	EQU $A2
+led_high	EQU $AC
+led_low		EQU $AB
+
+Start:  LOAD s1, 0x00
+	LOAD s2, 0x00
+	LOAD s3, 0x00
+	
+Poll:	IN s0, data_present
+     	TEST s0, data_present
+	Jump Z, Poll
+	
+	IN s0, read_port
+	LOAD s1, s0
+	OUT s0, write_port
+	
+Poll2:	IN s0, data_present
+     	TEST s0, data_present
+	Jump Z, Poll2
+	
+	IN s0, read_port
+	LOAD s2, s0
+	OUT s0, write_port	
+	
+Poll3:	IN s0, data_present
+     	TEST s0, data_present
+	Jump Z, Poll3
+	
+	IN s0, read_port
+	LOAD s3, s0
+	OUT s0, write_port
+	
+;Check first command
+chkSWT: COMP s1, 0x73
+	Jump Nz, ResetC
+	COMP s2, 0x77
+	Jump Nz, ResetC
+	COMP s3, 0x74
+	Jump Nz, ResetC
+	
+	LOAD s0, 0x20
+	OUT s0, write_port
+	
+;Read Switches
+	IN s0, switches_high
+	LOAD s1, s0
+	OUT s0, write_port
+	
+	IN s0, switches_low
+	LOAD s2, s0
+	OUT s0, write_port
+	
+	JUMP ResetC
+	
+	COMP s1, 0x6C
+	JUMP Nz, ResetC
+	COMP s2, 0x65
+	JUMP Nz, ResetC
+	Comp s3, 0x64
+	JUMP Nz, ResetC
+	
+	LOAD s0, 0x20
+	OUT s0, write_port
+	
+;Write to LEDs
+led1:	IN s0, data_present
+	TEST s0, data_present
+	JUMP Z, led1
+	IN s0, read_port
+	LOAD s4, s0
+	OUT s0, write_port
+	
+led2:	IN s0, data_present
+	TEST s0, data_present
+	JUMP Z, led2
+	IN s0, read_port
+	LOAD s5, s0
+	OUT s0, write_port
+	
+	OUT s4, led_high
+	OUT s5, led_low
+		
+	
+;Reset cursor
+ResetC:	LOAD s0, 0x0A
+	OUT s0, write_port
+	LOAD s0, 0x0D
+	OUT s0, write_port
+		
+	JUMP Start
+	
