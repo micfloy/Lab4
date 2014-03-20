@@ -4,3 +4,5 @@
  
  # clock pin for Atlys rev C board
  NET "clk"   LOC = "L15"; # Bank = 1, Pin name = IO_L42P_GCLK7_M1UDM, Type = GCLK, Sch name = GCLK
+
+ NET "reset" LOC = "F5";  # Bank = 3, Pin name = IO_L55N_M3A14, 	   Sch name = BTNC
