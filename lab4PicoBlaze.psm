@@ -36,11 +36,11 @@ Poll3:	IN s0, data_present
 	
 ;Check first command
 chkSWT: COMP s1, 0x73
-	Jump Nz, ResetC
+	Jump Nz, led
 	COMP s2, 0x77
-	Jump Nz, ResetC
+	Jump Nz, led
 	COMP s3, 0x74
-	Jump Nz, ResetC
+	Jump Nz, led
 	
 	LOAD s0, 0x20
 	OUT s0, write_port
@@ -55,8 +55,9 @@ chkSWT: COMP s1, 0x73
 	OUT s0, write_port
 	
 	JUMP ResetC
-	
-	COMP s1, 0x6C
+
+;Check led command	
+led:	COMP s1, 0x6C
 	JUMP Nz, ResetC
 	COMP s2, 0x65
 	JUMP Nz, ResetC
