@@ -136,7 +136,7 @@ architecture Behavioral of atlys_remote_terminal_pb is
 	Signal kcpsm6_sleep : std_logic;
 	Signal kcpsm6_reset : std_logic;
 	
-	signal switch_char_hi, switch_char_lo : std_logic_vector(3 downto 0);
+	signal switch_char_hi, switch_char_lo : std_logic_vector(7 downto 0);
 	
 	
 begin
@@ -227,8 +227,6 @@ begin
 					   '0';
 					 
 	buffer_write <= '1' when port_id = char_out_port and write_strobe = '1' else
-					    '1' when port_id = led_top_port and write_strobe ='1' else
-					    '1' when port_id = led_bot_port and write_strobe ='1' else
 					    '0';
 
 
