@@ -170,17 +170,19 @@ begin
 			buffer_data_present => buffer_data,
 			buffer_half_full => open,
 			buffer_full => open,
-			buffer_reset => reset,
+			buffer_reset => '0',
 			clk => clk
 		);
 		
 	
 		
 	processor: kcpsm6
-		GENERIC MAP( hwbuild => X"00",
-			interrupt_vector => X"3FF",
+		GENERIC MAP( 
+								 hwbuild => X"00",
+					 interrupt_vector => X"3FF",
 			scratch_pad_memory_size => 64)
-		PORT MAP( address => address,
+		PORT MAP( 
+			address => address,
 			instruction => instruction,
 			bram_enable => bram_enable,
 			port_id => port_id,
@@ -195,11 +197,16 @@ begin
 			reset => kcpsm6_reset,
 			clk => clk );
 
+			kcpsm6_sleep <= '0';
+			interrupt <= interrupt_ack;
+			
 	Inst_lab4PicoBlaze: lab4PicoBlaze 
-		generic map( C_FAMILY => "S6",
+		generic map( 
+			C_FAMILY => "S6",
 			C_RAM_SIZE_KWORDS => 1,
 			C_JTAG_LOADER_ENABLE => 1)
-		port map( address => address,
+		port map( 
+			address => address,
 			instruction => instruction,
 			enable => bram_enable,
 			rdl => kcpsm6_reset,

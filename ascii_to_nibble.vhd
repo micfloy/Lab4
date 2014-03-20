@@ -42,39 +42,39 @@ begin
 	begin
 		case ascii is
 			when x"30" =>
-				nibble <= '0';
+				nibble <= x"0";
 			when x"31" =>
-				nibble <= '1';
+				nibble <= x"1";
 			when x"32" =>
-				nibble <= '2';
+				nibble <= x"2";
 			when x"33" =>
-				nibble <= '3';
+				nibble <= x"3";
 			when x"34" =>
-				nibble <= '4';
+				nibble <= x"4";
 			when x"35" =>
-				nibble <= '5';
+				nibble <= x"5";
 			when x"36" =>
-				nibble <= '6';
+				nibble <= x"6";
 			when x"37" =>
-				nibble <= '7';
+				nibble <= x"7";
 			when x"38" =>
-				nibble <= '8';
+				nibble <= x"8";
 			when x"39" =>
-				nibble <= '9';
+				nibble <= x"9";
 			when x"41" =>
-				nibble <= 'A';
+				nibble <= x"A";
 			when x"42" =>
-				nibble <= 'B';
+				nibble <= x"B";
 			when x"43" =>
-				nibble <= 'C';
+				nibble <= x"C";
 			when x"44" =>
-				nibble <= 'D';
+				nibble <= x"D";
 			when x"45" =>
-				nibble <= 'E';
+				nibble <= x"E";
 			when x"46" =>
-				nibble <= 'F';
+				nibble <= x"F";
 			when others =>
-				nibble <= '0';
+				nibble <= x"0";
 		end case;
 		
 	end process;
