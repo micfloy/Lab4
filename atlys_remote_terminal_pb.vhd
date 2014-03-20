@@ -111,15 +111,21 @@ architecture Behavioral of atlys_remote_terminal_pb is
 		);
 	END COMPONENT;
 	
+	constant switches_port	   : std_logic_vector := x"AF";
+	constant char_port			: std_logic_vector := x"AD";
+	constant data_present_port : std_logic_vector := x"07";
+	constant char_out_port		: std_logic_vector := x"AC";
+	constant led_bot_port		: std_logic_vector := x"AB";
+	constant led_top_port		: std_logic_vector := x"AE";
+	
 	signal data_in_pico, data_out_pico : std_logic_vector(7 downto 0);
-	signal en_sig, buffer_write_sig, buffer_data_sig : std_logic; 
-	signal half_full_sig, full_sig, buffer_reset_sig : std_logic;
+	signal en_sig, buffer_data, buffer_read, buffer_write : std_logic; 
 	
 	signal address : std_logic_vector(11 downto 0);
 	signal instruction : std_logic_vector(17 downto 0);
 	signal bram_enable : std_logic;
-	signal in_port : std_logic_vector(7 downto 0);
-	signal out_port : std_logic_vector(7 downto 0);
+	Signal port_in : std_logic_vector(7 downto 0);
+	Signal port_out : std_logic_vector(7 downto 0);
 	Signal port_id : std_logic_vector(7 downto 0);
 	Signal write_strobe : std_logic;
 	Signal k_write_strobe : std_logic;
@@ -144,11 +150,11 @@ begin
 			data_in => data_out_pico,
 			en_16_x_baud => en_sig,
 			serial_out => serial_out,
-			buffer_write => buffer_write_sig,
-			buffer_data_present => buffer_data_sig,
-			buffer_half_full => half_full_sig,
-			buffer_full => full_sig,
-			buffer_reset => buffer_reset_sig,
+			buffer_write => buffer_write,
+			buffer_data_present => open,
+			buffer_half_full => open,
+			buffer_full => open,
+			buffer_reset => reset,
 			clk => clk
 		);
 		
@@ -156,13 +162,15 @@ begin
 			serial_in => serial_in,
 			en_16_x_baud => en_sig,
 			data_out => data_in_pico,
-			buffer_read => buffer_data_sig,
-			buffer_data_present => buffer_write_sig,
-			buffer_half_full => half_full_sig,
-			buffer_full => full_sig,
-			buffer_reset => buffer_reset_sig,
+			buffer_read => buffer_read,
+			buffer_data_present => buffer_data,
+			buffer_half_full => open,
+			buffer_full => open,
+			buffer_reset => reset,
 			clk => clk
 		);
+		
+	
 		
 	processor: kcpsm6
 		GENERIC MAP( hwbuild => X"00",
@@ -174,9 +182,9 @@ begin
 			port_id => port_id,
 			write_strobe => write_strobe,
 			k_write_strobe => k_write_strobe,
-			out_port => out_port,
+			out_port => port_out,
 			read_strobe => read_strobe,
-			in_port => in_port,
+			in_port => port_in,
 			interrupt => interrupt,
 			interrupt_ack => interrupt_ack,
 			sleep => kcpsm6_sleep,
@@ -197,13 +205,26 @@ begin
 	begin
 		if(rising_edge(clk)) then
 			case port_id
-				when x"AF" =>
+				when switches_port =>
 					port_in <= data_in_pico;
-				when x"0A" =>
-					port_out <= data_out_pico;
+				when char_port =>
+					port_in <= data_in_pico;
+				when data_present_port =>
+					port_in <= "0000000" & buffer_data;
+				when others =>
+					port_in <= "00000000";
 			end case;
 		end if;
 	end process;
+	
+	buff_read <= '1' when port_id = switches_port and read_strobe = '1' else
+					 '1' when port_id = char_port and read_strobe = '1' else
+					 '0';
+					 
+	buff_write <= '1' when port_id = char_out_port and write_strobe = '1' else
+					  '1' when port_id = led_low_port and write_strobe ='1' else
+					  '1' when port_id = led_high_port and write_strobe ='1' else
+					  '0';
 
 
 
